@@ -31,27 +31,17 @@ class Parser:
     def get_coin_price(self):
         response = requests.get(self.url, headers=self.headers, params=self.params)
         with open('data.json', 'w') as file:
-            file.write(response.text)
+            data = json.loads(response.text)
+            data['bitcoin']['time'] = datetime.datetime.now().strftime("%H:%M")
+            file.write(json.dumps(data))
 
     def check_coin_price(self):
         with open('data.json', 'r') as file:
             data = json.loads(file.read())
             return f"BTC: {data['bitcoin']['usd']} $\n\nLast update: {data['bitcoin']['time']}"
 
-    def add_time(self):
-        with open('data.json', 'r') as file:
-            data = json.loads(file.read())
-        data['bitcoin']['time'] = datetime.datetime.now().strftime("%H:%M")
-        with open('data.json', 'w') as file:
-            file.write(json.dumps(data))
-
 
 parser = Parser()
-
-
-def update_price():
-    parser.get_coin_price()
-    parser.add_time()
 
 
 @dp.message(CommandStart())
@@ -63,6 +53,12 @@ async def cdm_start(message: Message):
 @dp.message(Command('price'))
 async def cmd_price(message: Message):
     await message.answer(f'{parser.check_coin_price()}')
+
+
+@dp.message(Command('photo'))
+async def cmd_photo(message: Message):
+    photo1 = open('img_1.png', 'r').read()
+    await message.answer_photo(photo1, caption='Photo')
 
 
 if __name__ == '__main__':
